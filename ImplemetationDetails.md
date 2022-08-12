@@ -2,9 +2,8 @@
 ## Actions
   The action that the agent can do, this is simply the movement the agent performs.
   
-  [x] (Dx, Dy)
-  
-  []  (l, alpha)
+    [x] (Dx, Dy)
+    []  (l, alpha)
   
   - Actions need to be scaled every time we change the time scale of the environment or the type of agent that is being simulated.
   - Actions need to be somehow limited to prevent the agent from moving too far in a single step.
