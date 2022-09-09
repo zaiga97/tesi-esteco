@@ -33,3 +33,16 @@
 
   Keep in mind a simple metrics doesn't exist; otherwise the problem could be reduced to maximizing this metric. One could try and teach a classifier to separate real and fake trajectories (similar to GAN discriminator) but then the problem will be evaluating this NN performances.
   
+# Data
+
+  The data are elaborated via the following way:
+    - Trajectories that appear to be broken (finish in a place and an other starts 2m away in the following second) are united.
+    - Short trajectories (both in lenght (<5m) than in number of points (<10)) are removed because are usually errors of the detection system
+    - Interpolation is used to sample the trajectory every 0.25s at regular intervals. The time index is then substituted with a more usuable integer index
+    
+    The data is the reorganized in 3 dataframes:
+    1. traj_df: {id, t, x, y, vx, vy, ax, ay, p(shapely.geometry.Point), v(shapely.geometry.Point), a(shapely.geometry.Point)}
+    2. agent_df: {id, cat, traj(shapely.geometry.LineString), xs, xf, ys, yf, ts, tf}
+    3. episode_df: {id, other_id}
+    
+  
