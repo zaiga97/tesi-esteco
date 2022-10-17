@@ -1,0 +1,53 @@
+This model was learned with the dir, mag trick in the nn structure:
+class PI(nn.Module):
+    def __init__(self, obs_size: int, action_size: int, action_max: torch.Tensor, hidden_dim: int = 128):
+        super(PI, self).__init__()
+        self.action_max = action_max
+        self.in_block = nn.Sequential(
+            nn.Linear(obs_size, hidden_dim),
+            nn.LeakyReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LeakyReLU()
+        )
+
+        self.action_dir = nn.Sequential(
+            nn.Linear(hidden_dim, action_size)
+        )
+
+        self.action_mag = nn.Sequential(
+            nn.Linear(hidden_dim, 1),
+            nn.Tanh()
+        )
+
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, std=1e-3)
+                nn.init.zeros_(m.bias)
+
+    def forward(self, obs):
+        x = self.in_block(obs)
+        action_dir = self.action_dir(x)
+        action_dir = torch.nn.functional.normalize(action_dir, dim=-1)
+        action_mag = self.action_mag(x) * self.action_max
+        return action_dir * action_mag
+
+
+
+The env was set as such:
+    def calculate_reward(self):
+        reward = 0
+        # Time penalty
+        reward -= 0.025
+        # Wander penalty
+        reward += self.progress
+        # To close to cars penalty
+        if abs(self.agent_pos[1]) > 0.5:
+            if abs(self.closer_car_vec[0]) < 2.6 and abs(self.closer_car_vec[1]) < 1.1:
+                reward -= 10
+        # Outside designed wander space
+        if abs(self.agent_pos[1]) < 5 and abs(self.agent_pos[0]) > 2:
+            reward -= 1
+        # If you reach the end get a reward
+        if self.done:
+            reward += 100
+        return reward
