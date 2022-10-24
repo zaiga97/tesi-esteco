@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from Utils import RoadGeometry as rg
+from Data import RoadGeometry as rg
 from .Actor import Actor
 
 
@@ -83,7 +83,7 @@ class HardCoded(Actor):
 
         return np.array((target_v / np.linalg.norm(target_v)) * self.max_step)
 
-    def reset(self):
+    def reset(self, *args):
         super(HardCoded, self).reset()
         self.target = None
         self.got_A = self.got_B = self.got_C = self.check = self.straight_to_target

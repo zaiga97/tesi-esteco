@@ -71,7 +71,7 @@ class ActorCritic(nn.Module, Actor):
             action = self.pi(obs).numpy()
             return action
 
-    def reset(self):
+    def reset(self, *args):
         pass
 
     def save(self, path: str):

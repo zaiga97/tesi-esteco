@@ -8,7 +8,7 @@ class Actor:
     def act(self, state_batch: torch.Tensor):
         pass
 
-    def reset(self):
+    def reset(self, *args):
         pass
 
     def save(self, path: str):

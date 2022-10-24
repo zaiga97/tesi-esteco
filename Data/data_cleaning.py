@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
-from Utils import RoadGeometry as rg
+from Data import RoadGeometry as rg
 
 pd.options.mode.chained_assignment = None
 
