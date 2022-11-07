@@ -1,24 +1,26 @@
 import numpy as np
 import torch
 
-from Data import RoadGeometry as rg
 from .Actor import Actor
 
 
 class HardCoded(Actor):
-    def __init__(self, max_step: float = .35, straight_to_target: bool = False, check_traffic: bool = True):
+
+    def __init__(self, max_step: float = .35, straight_to_target: bool = False, check_traffic: bool = True, scale=1):
         super(HardCoded, self).__init__()
         self.target = None
-        self.A = torch.Tensor([0, -rg.LOW_Y_INTERSECTION])
+        self.A = torch.Tensor([0, -5])
         self.B = torch.Tensor([0, 0])
-        self.C = torch.Tensor([0, rg.HIGH_Y_INTERSECTION])
+        self.C = torch.Tensor([0, 5])
         self.got_A = self.got_B = self.got_C = straight_to_target
         self.check = False
         self.max_step = max_step
+        self.env_scale = scale
         self.straight_to_target = straight_to_target
         self.check_traffic = check_traffic
 
-    def act(self, state: torch.Tensor):
+    def exploit(self, state):
+        state = torch.Tensor(state)
         position = state[0: 2]
         # Check if we reached current target
         if self.target is not None:
@@ -81,7 +83,10 @@ class HardCoded(Actor):
             # If we reach here is because there are no predicted collision
             self.check = False
 
-        return np.array((target_v / np.linalg.norm(target_v)) * self.max_step)
+        return np.array((target_v / np.linalg.norm(target_v)) * self.max_step / self.env_scale)
+
+    def explore(self, state_batch: torch.Tensor):
+        raise NotImplementedError
 
     def reset(self, *args):
         super(HardCoded, self).reset()

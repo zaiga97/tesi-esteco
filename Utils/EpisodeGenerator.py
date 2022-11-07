@@ -4,7 +4,6 @@ import pandas as pd
 import torch
 from typing import List
 
-from Actors import Actor, Human
 from Environments import Intersection
 from .Buffers import Buffer
 
@@ -24,6 +23,8 @@ class EpisodeGenerator:
 
     def add_to_buffer_lists(self, state, action, reward, done, next_state):
         self.states.append(state)
+        #if abs(action).max() > 1:
+            #action = action / abs(action).max() + 0.05
         self.actions.append(action)
         self.rewards.append(reward)
         self.dones.append(done)
@@ -41,12 +42,10 @@ class EpisodeGenerator:
 
         return buffer
 
-    def generate(self, episode_ids: List[int], agent: Actor = None, max_steps: int = 200, generate_films: bool = False,
+    def generate(self, agent, episode_ids: List[int], max_steps: int = 200, generate_films: bool = False,
                  film_path: str = None, generate_buffer: bool = False):
-        if agent is None:
-            agent = Human(self.orig_df.loc[self.orig_df.id.isin(episode_ids)])
-        episodes = dict()
 
+        episodes = dict()
         if generate_buffer:
             self.initialize_buffer_lists()
 
@@ -67,9 +66,9 @@ class EpisodeGenerator:
                 for other_id in other_ids:
                     other_agents.add(other_id)
 
-                action = agent.act(torch.Tensor(obs))
-                agent_vx.append(action[0] * 4)
-                agent_vy.append(action[1] * 4)
+                action = agent.exploit(obs)
+                agent_vx.append(action[0] * self.env.step_scale * 4)
+                agent_vy.append(action[1] * self.env.step_scale * 4)
 
                 new_obs, reward, done, _ = self.env.step(action)
 
@@ -86,7 +85,10 @@ class EpisodeGenerator:
                 ep_len += 1
 
             other_agents.remove(agent_id)
-            episodes[agent_id] = pd.concat([self.orig_df.loc[self.orig_df.id.isin(other_agents)],
+            other_agents_df = self.orig_df.loc[self.orig_df.id.isin(other_agents)].copy()
+            if self.env.flip:
+                other_agents_df[['x', 'vx', 'ax', 'y', 'vy', 'ay']] *= -1
+            episodes[agent_id] = pd.concat([other_agents_df,
                                             pd.DataFrame({'id': agent_id, 't': agent_t, 'x': agent_x, 'y': agent_y,
                                                           'vx': agent_vx, 'vy': agent_vy})])
             if generate_films:

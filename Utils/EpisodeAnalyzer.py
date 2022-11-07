@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from shapely.geometry import LineString, Point, MultiPoint
+from shapely.geometry import LineString, MultiPoint
 import seaborn as sns
 from typing import Dict
 
@@ -40,6 +40,7 @@ class EpisodeAnalyzer:
             for car_traj in cars_trajs:
                 all_dists.append(self.trajs_min_dist(agent_traj, car_traj))
             min_dist[agent_id] = min(all_dists)
+        min_dist = pd.DataFrame({'ID': min_dist.keys(), 'Minimum car distance': min_dist.values()}).set_index('ID')
         if graph:
             return min_dist, self.generate_graph(min_dist, binwidth=1, xlim=(0, 20), ylim=(0, .25),
                                                  title='Min. distance')
@@ -52,6 +53,7 @@ class EpisodeAnalyzer:
             agent_traj = ep.loc[ep.id == agent_id]
             agent_crossing_time = len(agent_traj.groupby('t').filter(lambda x: abs(x.y) < 5)) / 4
             cr_times[agent_id] = agent_crossing_time
+        cr_times = pd.DataFrame({'ID': cr_times.keys(), 'Crossing_times': cr_times.values()}).set_index('ID')
         if graph:
             return cr_times, self.generate_graph(cr_times, binwidth=0.5, xlim=(3, 20), ylim=(0, 0.5),
                                                  title='Crossing time')
@@ -97,9 +99,22 @@ class EpisodeAnalyzer:
                 all_PETs.append(self.traj_PET(agent_traj, car_traj))
 
             min_PETs[agent_id] = min(all_PETs)
+        min_PETs = pd.DataFrame({'ID': min_PETs.keys(), 'Minimum PET': min_PETs.values()}).set_index('ID')
         if graph:
             return min_PETs, self.generate_graph(min_PETs, binwidth=2, xlim=(-20, 20), ylim=(0, 0.25), title='PET')
         return min_PETs
+
+    def ep_velocities(self, ep_dict: Dict[int, pd.DataFrame], graph: bool = False):
+        velocities = dict()
+        for agent_id in ep_dict.keys():
+            ep = ep_dict[agent_id]
+            agent_traj = ep.loc[ep.id == agent_id]
+            velocities[agent_id] = agent_traj[['vx', 'vy']].apply(np.linalg.norm, axis=1).mean()
+        velocities = pd.DataFrame({'ID': velocities.keys(), 'Average velocity': velocities.values()}).set_index('ID')
+        if graph:
+            return velocities, self.generate_graph(velocities, binwidth=0.3, xlim=(0, 4), ylim=(0, 1),
+                                                   title='Average velocity')
+        return velocities
 
     @staticmethod
     def velocities_graph(ep_dict: Dict[int, pd.DataFrame]):

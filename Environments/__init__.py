@@ -1,1 +1,1 @@
-from .Environment import Intersection
+from .Environment import Intersection, make_intersection

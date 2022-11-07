@@ -3,10 +3,13 @@ import torch
 
 class Actor:
     def __init__(self):
-        pass
+        super(Actor, self).__init__()
 
-    def act(self, state_batch: torch.Tensor):
-        pass
+    def exploit(self, state_batch: torch.Tensor):
+        raise NotImplementedError
+
+    def explore(self, state_batch: torch.Tensor):
+        raise NotImplementedError
 
     def reset(self, *args):
         pass
