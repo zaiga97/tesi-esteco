@@ -92,7 +92,7 @@ class Intersection(Env):
         self.update_state()
         return self.state, self.reward, self.done, {}
 
-    def reset(self, agent_id: int = None, **kwargs):
+    def reset(self, agent_id: int = None, **kwargs: object) -> object:
         if agent_id is None:
             agent_id = np.random.choice(self.pedestrian_df.index)
 
